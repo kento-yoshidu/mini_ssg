@@ -59,10 +59,15 @@ fn convert_markdown_to_html(markdown: &str) -> String {
     format!("{toc}<main class=\"main\">{buffer}</main>")
 }
 
-fn build_page(md_path: &str, out_path: &str, css_href: &str) -> std::io::Result<()> {
+fn build_page(md_path: &str, out_path: &str, css_hrefs: &[&str]) -> std::io::Result<()> {
     let content = fs::read_to_string(md_path)?;
 
     let res = convert_markdown_to_html(&content);
+
+    let css_links: String = css_hrefs
+        .iter()
+        .map(|href| format!("<link rel=\"stylesheet\" href=\"{href}\">"))
+        .collect();
 
     let html = format!(
         "<html>
@@ -74,7 +79,7 @@ fn build_page(md_path: &str, out_path: &str, css_href: &str) -> std::io::Result<
                 <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">
                 <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>
                 <link href=\"https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Roboto:wght@400;700&display=swap\" rel=\"stylesheet\">
-                <link rel=\"stylesheet\" href=\"{css_href}\">
+                {css_links}
             </head>
             <body>
                 <div class=\"wrapper\">
@@ -113,7 +118,7 @@ fn main() -> std::io::Result<()> {
 
     fs::create_dir_all("dist")?;
 
-    build_page("content/index.md", "dist/index.html", "style.css")?;
+    build_page("content/index.md", "dist/index.html", &["style.css"])?;
 
     let mut dirs: Vec<String> = Vec::new();
 
@@ -134,10 +139,11 @@ fn main() -> std::io::Result<()> {
     for dir in dirs.iter() {
         let md = format!("content/{dir}/index.md");
         let out = format!("dist/{dir}/index.html");
-        build_page(&md, &out, "../style.css")?;
+        build_page(&md, &out, &["../style.css", "../page.css"])?;
     }
 
     fs::copy("static/style.css", "dist/style.css")?;
+    fs::copy("static/page.css", "dist/page.css")?;
 
     Ok(())
 }
