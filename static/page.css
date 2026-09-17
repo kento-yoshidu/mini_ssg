@@ -1,7 +1,7 @@
 .wrapper {
   display: flex;
   gap: 32px;
-  max-width: 1400px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 64px 0 32px;
 }
@@ -14,7 +14,7 @@
     padding-left: 0;
 
     li {
-      margin-bottom: 8px;
+      margin-bottom: 4px;
 
       &.toc-h2 {
         margin-left: 8px;
@@ -90,6 +90,11 @@
   ol {
     margin: 16px 0;
     padding-left: 1.5rem;
+
+    ul,
+    ol {
+      margin: 0;
+    }
   }
 
   table {
