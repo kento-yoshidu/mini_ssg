@@ -8,50 +8,56 @@ struct HeadingInfo {
     text: String,
 }
 
-fn convert_markdown_to_html(markdown: &str) -> String {
+fn convert_markdown_to_html(markdown: &str, with_toc: bool) -> String {
     let mut options = pulldown_cmark::Options::empty();
     options.insert(pulldown_cmark::Options::ENABLE_TABLES);
 
     let mut events: Vec<Event> = pulldown_cmark::Parser::new_ext(markdown, options).collect();
 
-    // 目次の生成
-    let mut headings = Vec::new();
+    let toc = if with_toc {
+        // 目次の生成
+        let mut headings = Vec::new();
 
-    let mut current_text = String::new();
+        let mut current_text = String::new();
 
-    let mut in_heading: Option<HeadingLevel> = None;
+        let mut in_heading: Option<HeadingLevel> = None;
 
-    let mut count = 0;
+        let mut count = 0;
 
-    for event in events.iter_mut() {
-        match event {
-            Event::Start(Tag::Heading { level, id, classes, attrs }) if *level <= HeadingLevel::H3 => {
-                count += 1;
-                *id = Some(CowStr::from(format!("h-{count}")));
-                in_heading = Some(*level);
-                current_text.clear();
-            },
-            Event::Text(text) if in_heading.is_some() => current_text.push_str(text),
-            Event::End(TagEnd::Heading(level)) if in_heading == Some(*level) => {
-                headings.push(HeadingInfo {
-                    level: *level,
-                    id: format!("h-{count}"),
-                    text: current_text.clone(),
-                });
-                in_heading = None;
-            },
-            _ => {},
+        for event in events.iter_mut() {
+            match event {
+                Event::Start(Tag::Heading { level, id, classes, attrs }) if *level <= HeadingLevel::H3 => {
+                    count += 1;
+                    *id = Some(CowStr::from(format!("h-{count}")));
+                    in_heading = Some(*level);
+                    current_text.clear();
+                },
+                Event::Text(text) if in_heading.is_some() => current_text.push_str(text),
+                Event::End(TagEnd::Heading(level)) if in_heading == Some(*level) => {
+                    headings.push(HeadingInfo {
+                        level: *level,
+                        id: format!("h-{count}"),
+                        text: current_text.clone(),
+                    });
+                    in_heading = None;
+                },
+                _ => {},
+            }
         }
-    }
 
-    let mut toc = String::from("<nav class=\"toc\"><ul>");
-    for h in &headings {
-        toc.push_str(&format!(
-            "<li class=\"toc-{:?}\"><a href=\"#{}\">{}</a></li>",
-            h.level, h.id, h.text
-        ));
-    }
-    toc.push_str("</ul></nav>");
+        let mut toc = String::from("<nav class=\"toc\"><ul>");
+        for h in &headings {
+            toc.push_str(&format!(
+                "<li class=\"toc-{:?}\"><a href=\"#{}\">{}</a></li>",
+                h.level, h.id, h.text
+            ));
+        }
+        toc.push_str("</ul></nav>");
+
+        toc
+    } else {
+        String::new()
+    };
 
     let mut buffer = String::new();
     pulldown_cmark::html::push_html(&mut buffer, events.into_iter());
@@ -59,10 +65,12 @@ fn convert_markdown_to_html(markdown: &str) -> String {
     format!("{toc}<main class=\"main\">{buffer}</main>")
 }
 
-fn build_page(md_path: &str, out_path: &str, css_hrefs: &[&str]) -> std::io::Result<()> {
+fn build_page(md_path: &str, out_path: &str, css_hrefs: &[&str], with_toc: bool) -> std::io::Result<()> {
     let content = fs::read_to_string(md_path)?;
 
-    let res = convert_markdown_to_html(&content);
+    let res = convert_markdown_to_html(&content, with_toc);
+
+    let container_class = if with_toc { "wrapper" } else { "top" };
 
     let css_links: String = css_hrefs
         .iter()
@@ -82,7 +90,7 @@ fn build_page(md_path: &str, out_path: &str, css_hrefs: &[&str]) -> std::io::Res
                 {css_links}
             </head>
             <body>
-                <div class=\"wrapper\">
+                <div class=\"{container_class}\">
                     {res}
                 </div>
                 <footer class=\"footer\">
@@ -118,7 +126,7 @@ fn main() -> std::io::Result<()> {
 
     fs::create_dir_all("dist")?;
 
-    build_page("content/index.md", "dist/index.html", &["style.css"])?;
+    build_page("content/index.md", "dist/index.html", &["style.css"], false)?;
 
     let mut dirs: Vec<String> = Vec::new();
 
@@ -139,7 +147,7 @@ fn main() -> std::io::Result<()> {
     for dir in dirs.iter() {
         let md = format!("content/{dir}/index.md");
         let out = format!("dist/{dir}/index.html");
-        build_page(&md, &out, &["../style.css", "../page.css"])?;
+        build_page(&md, &out, &["../style.css", "../page.css"], true)?;
     }
 
     fs::copy("static/style.css", "dist/style.css")?;

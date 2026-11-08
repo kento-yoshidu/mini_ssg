@@ -8,6 +8,7 @@
 
 .toc {
   width: 960px;
+  margin-top: 89px;
 
   ul {
     list-style: none;
@@ -39,7 +40,7 @@
 .main {
   .section2 {
     margin-bottom: 16px;
-    padding: 16px 0 0;
+    padding: 16px 0;
 
     h2 {
       margin-bottom: 12px;
@@ -49,7 +50,7 @@
   }
 
   .section3 {
-    padding: 16px 0;
+    padding: 16px 0 0px;
 
     h3 {
       margin-bottom: 8px;
@@ -57,25 +58,9 @@
     }
   }
 
-  h1,
-  h2,
-  h3 {
-    font-weight: 700;
-    line-height: 1.3;
-  }
-
-  a {
-    color: #0969da;
-  }
-
-  code {
-    background: #f2f2f2;
-    padding: 0.1em 0.3em;
-    border-radius: 3px;
-  }
-
   p {
-    text-indent: 0.5rem;
+    font-size: 17px;
+    margin-bottom: 8px;
   }
 
   p.updated {
@@ -84,17 +69,6 @@
     margin-bottom: 8px;
     color: #888;
     font-size: 16px;
-  }
-
-  ul,
-  ol {
-    margin: 16px 0;
-    padding-left: 1.5rem;
-
-    ul,
-    ol {
-      margin: 0;
-    }
   }
 
   table {
