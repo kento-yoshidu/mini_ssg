@@ -8,6 +8,7 @@
 
 .toc {
   width: 960px;
+  margin-top: 89px;
 
   ul {
     list-style: none;
@@ -39,7 +40,7 @@
 .main {
   .section2 {
     margin-bottom: 16px;
-    padding: 16px 0 0;
+    padding: 16px 0;
 
     h2 {
       margin-bottom: 12px;
@@ -49,12 +50,17 @@
   }
 
   .section3 {
-    padding: 16px 0;
+    padding: 16px 0 0px;
 
     h3 {
       margin-bottom: 8px;
       font-size: 20px;
     }
+  }
+
+  p {
+    font-size: 17px;
+    margin-bottom: 8px;
   }
 
   p.updated {
