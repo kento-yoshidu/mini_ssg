@@ -62,7 +62,13 @@ fn convert_markdown_to_html(markdown: &str, with_toc: bool) -> String {
     let mut buffer = String::new();
     pulldown_cmark::html::push_html(&mut buffer, events.into_iter());
 
-    format!("{toc}<main class=\"main\">{buffer}</main>")
+    let back_link = if with_toc {
+        "<p class=\"back-to-top\"><a href=\"../\">← トップページに戻る</a></p>"
+    } else {
+        ""
+    };
+
+    format!("{toc}<main class=\"main\">{back_link}{buffer}{back_link}</main>")
 }
 
 fn build_page(md_path: &str, out_path: &str, css_hrefs: &[&str], with_toc: bool) -> std::io::Result<()> {
