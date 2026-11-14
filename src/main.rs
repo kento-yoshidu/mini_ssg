@@ -154,6 +154,20 @@ fn main() -> std::io::Result<()> {
         let md = format!("content/{dir}/index.md");
         let out = format!("dist/{dir}/index.html");
         build_page(&md, &out, &["../style.css", "../page.css"], true)?;
+
+        // index.md 以外のファイル（画像など）を dist にコピー
+        for entry in walkdir::WalkDir::new(format!("content/{dir}")) {
+            let entry = entry?;
+            let p = entry.path();
+            if p.is_file() && p.file_name() != Some("index.md".as_ref()) {
+                let rel = p.strip_prefix("content").unwrap();
+                let dest = std::path::Path::new("dist").join(rel);
+                if let Some(parent) = dest.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                fs::copy(p, dest)?;
+            }
+        }
     }
 
     fs::copy("static/style.css", "dist/style.css")?;
